@@ -1,0 +1,170 @@
+! -------------------------------------------------------------------------
+! Uniaxial Tensile Test FE Modelling
+! -------------------------------------------------------------------------
+
+/FILNAME,UTT,1
+/DSCAL, ALL, 1
+
+! >>>>> CONSTANTS <<<<<
+pi = acos(-1)
+eps = 1E-04
+
+*DIM,MyTitle,STRING,22
+MyTitle(1) = STRFILL(MyTitle,'UTT_Gurson',1)
+
+! >>>>> GEOMETRIC PARAMETERS <<<<<
+L0 = 10
+wd = 5.95
+tk = 1.52
+dlt = 0.005	! defect length (percentage) 
+
+
+! >>>>> MATERIAL PARAMETERS <<<<<
+EYoung = 207987.9433754395           ! Young modulus (MPa)
+ni = 0.3                             ! Poisson ratio
+eps_kill = 0.33
+
+! >>>>> GTN MODEL PARAMETERS <<<<<
+f0 = 0.0			! initial porosity
+q1 = 1.5			! first Tvergaard constant
+q2 = 1.0			! second Tvergaard constant
+q3 = 2.25			! third Tvergaard constant = q1^2   
+
+!i valori di q1,q2 e q3 sono fissati dal modello di Gurson, f0 è 0 perchè Bernardo mi ha detto
+!che la frazione iniziale di vuoti è 0. Mi auguro sia stato accertato
+ 
+! Da input esterno (DOVE?)
+!fN = 0.012			! nucleation porosity
+!epsN = 0.15			! mean strain
+!
+
+sN = 0.05			! standard deviation of mean strain
+!sigmaY = 951.7972		! initial yielding strength (MPa) !valore ottenuto dall'ottimizzazione di Voce-Swift
+!ma tanto non entra mai in gioco durante la simulazione
+
+! >>>>> LOADING CONDITIONS <<<<<
+uf = 1.0			! total displacement
+NLSTLC = 200			! n° of the load steps
+gursact = 1			! parametro per attivare Gurson (se lo vuoi attivare metti 1 ad esempio con 0 è disattivato)
+
+! >>>>> MESH PARAMETERS <<<<<
+meshfact = 1.0      !utilizzo uno
+ndivl = 14*meshfact
+ndivw = 8*meshfact
+ndivt = 2*meshfact
+
+/PREP7
+! >>>>> SPECIMEN MODELING <<<<<
+ET, 1, SOLID186
+
+MP, EX, 1, EYoung
+MP, PRXY, 1, ni
+
+! Gurson (gursact different than 0)
+*IF, gursact, NE, 0, THEN
+  ! GTN base model
+  TB, GURSON, 1, , 5, BASE
+  TBDATA, 1, sigmaY, f0, q1, q2, q3
+  ! GTN Strain-controlled nucleation
+  TB, GURSON, 1, , 3, SNNU
+  TBDATA, 1, fN, epsN, sN
+  ! GTN Coalescence             !la parte sulla coalescenza è tutta commentata 
+  !TB, GURSON, 1, , 2, COAL
+  !TBDATA, 1, fc, fF
+*ENDIF
+
+!qua inserisco i 5270 punti ottenuti dal modello polinomiale
+TB, PLASTIC, 1, 1, 5270, MISO 
+/INPUT,Costitutiva,txt
+
+K, 1, 0, 0, 0
+K, 2, (1-dlt)*wd/2, 0, 0
+K, 3, (1-dlt)*wd/2, 0, tk/2   !(1-dlt)*wd/2, 0, (1-dlt)*tk/2
+K, 4, 0, 0, tk/2              !0, 0, (1-dlt)*tk/2
+K, 5, 0, L0/2, 0
+K, 6, wd/2, L0/2, 0
+K, 7, wd/2, L0/2, tk/2
+K, 8, 0, L0/2, tk/2
+
+V, 1, 2, 3, 4, 5, 6, 7, 8
+
+LESIZE, 1, , , ndivw
+LESIZE, 3, , , ndivw
+LESIZE, 6, , , ndivw
+LESIZE, 10, , , ndivw
+LESIZE, 2, , , ndivt
+LESIZE, 4, , , ndivt
+LESIZE, 8, , , ndivt
+LESIZE, 12, , , ndivt
+LESIZE, 5, , , ndivl
+LESIZE, 7, , , ndivl
+LESIZE, 9, , , ndivl
+LESIZE, 11, , , ndivl
+
+TYPE, 1 $ MAT, 1 $ MSHKEY, 1 $ MSHAPE, 0
+VMESH, 1
+
+NLGEOM, ON    !nonlinearità geometriche
+
+!FINISH
+
+!/eof
+/SOLU
+ANTYPE, STATIC, NEW
+NROPT, FULL, , OFF
+EQSLV, SPARSE
+KBC, 0
+NCNV, 0
+AUTOTS, ON
+NSUBST, 1, 1000, 1
+
+NSEL, S, LOC, X, -eps, eps
+D, ALL, UX, 0 
+NSEL, S, LOC, Y, -eps, eps
+D, ALL, UY, 0 $ NSEL, ALL
+NSEL, S, LOC, Z, -eps, eps
+D, ALL, UZ, 0 $ NSEL, ALL
+
+tstep = 1
+
+*DO, i, 1, nlstlc, 1
+  TIME, tstep
+  ASEL, S, AREA, , 6 $ NSLA, S, 1
+  D, ALL, UY, (uf/(2*nlstlc))*i $ ASEL, ALL $ NSEL, ALL
+  SOLVE
+  tstep = tstep + 1
+*ENDDO
+
+FINISH
+
+!/INPUT,EqvOutput,txt  !file legato al killing e non di interesse
+
+SAVE
+
+!/eof
+/POST1
+
+!PLESOL, DPAR, TPOR, 2  
+
+
+*GET, nlst, ACTIVE, 0, SOLU, NCMLS
+
+*DIM, displacement, ARRAY, nlst
+*DIM, force, ARRAY, nlst
+
+*DO, i, 1, nlst, 1
+ SET, i
+ 
+ ASEL, S, AREA, , 6 $ NSLA, S, 1
+ *GET, nmrnd, NODE, , NUM, MAX $ ALLS
+ *GET, uy, NODE, NMRND, U, Y
+ displacement(i) = 2*uy
+
+ ASEL, S, AREA, , 6 $ NSLA, S, 1 $ FSUM
+ *GET, ry, FSUM, 0, ITEM, FY $ ASEL, ALL $ NSEL, ALL
+
+ force(i) = -4*ry
+
+*ENDDO
+
+FINISH
