@@ -37,15 +37,31 @@ This repository contains the code (Python and APDL) and the data for the paper: 
 
 ## Repository Structure
 ```
-prova
-
-
-
-
-
-
-
-
+Gurson_Bayes-Python-APDL-codes/
+│
+├── Gurson_Bayes/
+│   ├── Experimental_Curves/              # curves of the un-notched specimen needed by the script
+│       ├── *.txt   
+│   ├── Database_Random_Importer.py       # Random selection of FE simulations for initial database
+│   ├── Multitask_GPR_Training.py         # Multitask Gaussian Process training
+│   ├── TEST_Bay_Opt_Tot.py               # Bayesian optimization loop
+│   ├── utils/                            # Utility functions and helpers   
+│
+├── Experimental Data/
+│   ├── *.txt                             # Experimental force-displacement curves for all the tests
+│
+├── Database_MeshFact_1/
+│   ├── *.txt                             # FE simulation database files
+│
+├── ANSYS_Folder/
+│   └── ...                               # Working directory for MAPDL runs
+|
+├── APDL code/ANSYS_APDL_models           # Script APDL for reproducing un-notched and V-notched specimen simulation
+|
+├── Supplementary Material                # supplementary material for the paper                            
+│
+├── README.md                             # Project documentation
+└── requirements.txt                      # Python dependencies
 
 ```
 
