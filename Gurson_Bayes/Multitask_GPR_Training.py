@@ -6,9 +6,6 @@ import matplotlib.pyplot as plt
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
-# Use gggrossiTNRW as pyplot style
-#plt.style.use("gggrossiTNRW")
-
 from cycler import cycler
 
 # Style
@@ -82,7 +79,6 @@ epsN_vec = torch.load("epsN_vec.pt")
 # At this point, we have to transform inputs and outputs to prepare them to be fitted by a GPR
 
 # First, let's transform the inputs to a linear scale
-# x_fN = torch.log10(fN_vec)
 x_fN = fN_vec  # New version
 x_epsN = epsN_vec
 
@@ -137,9 +133,7 @@ for key in database:
 
     # temp is now a vector of 101 points, which we will use as output for the GPR
     # We also have to normalize the inputs, so we store them in a separate vector
-    # normalized_inputs[ind, :] = torch.tensor(
-    #     ((np.log10(key[0]) - mean_fN) / std_fN, (key[1] - mean_epsN) / std_epsN)
-    # )
+    
     normalized_inputs[ind, :] = torch.tensor(
         ((key[0] - mean_fN) / std_fN, (key[1] - mean_epsN) / std_epsN)
     )  # New version
@@ -217,20 +211,14 @@ def denormalize_output(outputs):
 
 # Define function that takes a denormalized input and returns the normalized input
 def normalize_input(input):
-    # return torch.stack(
-    #     (
-    #         (torch.log10(input[:, 0]) - mean_fN) / std_fN,
-    #         (input[:, 1] - mean_epsN) / std_epsN,
-    #     ),
-    #     dim=1,
-    # )
+    
     return torch.stack(
         (
             (input[:, 0] - mean_fN) / std_fN,
             (input[:, 1] - mean_epsN) / std_epsN,
         ),
         dim=1,
-    )  # New version
+    )  
 
 
 # Define GPR model
@@ -268,7 +256,7 @@ optimizer = torch.optim.Adam(
 mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
 
-# Training loop - 1000 iterations (initially)
+# Training loop 
 training_iterations = 1000
 for i in range(training_iterations):
     optimizer.zero_grad()
@@ -301,8 +289,7 @@ plt.ylabel("Force")
 plt.title("GPR predictions")
 plt.legend()
 plt.show()
-#plt.show(block=False)
-#plt.pause(5)  # serve per aggiornare la finestra
+
 
 
 # Save model
@@ -340,3 +327,4 @@ torch.save(tol, "Tolerance.pt")
 # Print fN_vec and epsN_vec
 print("Valori di fN:", fN_vec)
 print("Valori di epsN:", epsN_vec)
+
