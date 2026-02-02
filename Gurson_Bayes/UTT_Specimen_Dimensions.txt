@@ -1,4 +1,4 @@
-contenuto (ppm)	spessore (mm)	larghezza (mm)
+Cd (ppm)	thickness (mm)	width (mm)
 0.0	1.52	5.95
 0.2	1.52	5.98
 0.5	1.52	6.03
@@ -7,4 +7,5 @@ contenuto (ppm)	spessore (mm)	larghezza (mm)
 0.9	1.52	6.05
 1.1	1.52	6.00
 1.2	1.52	6.00
+
 1.5	1.52	6.00
