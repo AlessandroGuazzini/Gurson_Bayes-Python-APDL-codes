@@ -7,6 +7,7 @@ This repository contains the code (Python and APDL) and the data for the paper: 
 *(under peer review)*
 
 ## Requirements
+- Python = 3.10
 - numpy~=1.26.4
 - scipy~=1.14.1
 - scikit-learn~=1.5.2
