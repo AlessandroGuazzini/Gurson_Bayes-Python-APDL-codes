@@ -73,7 +73,7 @@ plt.rcParams['figure.constrained_layout.use'] = True
 mean_order = 1
 
 # If the loss is greater than this value, interrupt the optimization
-# put -0.1 if you want the asymptotic solution (default -10)
+# put -0.1 if you want the brute-force solution (default -10)
 # loss is negative for ptimization purposes
 loss_thresh = -10
 
@@ -87,7 +87,7 @@ beta = 2.5
 constrain_pbounds = True
 
 # Number of iterations of Bayesian Optimization (default 10)
-num_iterations = 1   # default 10
+num_iterations = 10   # default 10
 
 # Set random seed
 np.random.seed(51092)
@@ -348,13 +348,6 @@ def normalize_input(inputs):
     # If any element of the first column is negative, set it to 1e-9
     inputs_2D[inputs_2D[:, 0] < 0, 0] = 1e-9
 
-    # res = torch.stack(
-    #     (
-    #         (torch.log10(inputs_2D[..., 0]) - mean_fN) / std_fN,
-    #         (inputs_2D[..., 1] - mean_epsN) / std_epsN,
-    #     ),
-    #     dim=1,
-    # )
     res = torch.stack(
         (
             (inputs_2D[..., 0] - mean_fN) / std_fN,
@@ -378,13 +371,6 @@ def denormalize_input(inputs):
     else:
         inputs_2D = inputs.clone().detach()
 
-    # res = torch.stack(
-    #     (
-    #         10 ** (inputs_2D[..., 0] * std_fN + mean_fN),
-    #         inputs_2D[..., 1] * std_epsN + mean_epsN,
-    #     ),
-    #     dim=1,
-    # )
     res = torch.stack(
         (
             inputs_2D[..., 0] * std_fN + mean_fN,
@@ -443,10 +429,6 @@ likelihood.eval()
 def acquisition_function(fN, epsN, model, likelihood, base_samples):
     # Returns acquisition function value, given fN and epsN
 
-    # norm_fN = (torch.log10(fN) - mean_fN) / std_fN
-    # norm_epsN = (epsN - mean_epsN) / std_epsN
-    #
-    # x = torch.unsqueeze(torch.tensor([norm_fN, norm_epsN], dtype=torch.float32), 0)
     x = normalize_input([fN, epsN])
 
     with torch.no_grad():
@@ -580,16 +562,8 @@ for exp in exp_database:
             iters=1,
             minimizer_kwargs={"jac": "3-point"},
         )
-        # res = dual_annealing(
-        #     lambda x: -acquisition_function(x[0], x[1], model, likelihood, base_samples),
-        #     bounds=[pbounds["fN"], pbounds["epsN"]],
-        #     minimizer_kwargs={"jac": "3-point"},
-        # )
-        # res = direct(
-        #     lambda x: -acquisition_function(x[0], x[1], model, likelihood, base_samples),
-        #     bounds=[pbounds["fN"], pbounds["epsN"]],
-        #     maxiter=100,
-        # )
+
+        
         new_fN = res.x[0]
         new_epsN = res.x[1]
 
@@ -599,19 +573,12 @@ for exp in exp_database:
         )
         new_curve = curve_function(new_fN, new_epsN)
 
-        # Normalize new training points
-        # new_x = torch.tensor(
-        #     [(torch.log10(new_fN) - mean_fN) / std_fN, (new_epsN - mean_epsN) / std_epsN],
-        #     dtype=torch.float32,
-        # )
+    
         new_x = normalize_input([new_fN, new_epsN])
 
         # Normalize new training curve
         new_y = normalize_curve(new_curve)
 
-        # Substitute inf and nan values with 0 (as they come from a division by 0)
-        # new_y[torch.isnan(new_y)] = 0
-        # new_y[torch.isinf(new_y)] = 0
 
         # Evaluate loss_function at the new point
         new_loss = loss_function(new_curve, curve_to_model)[0]
@@ -685,21 +652,7 @@ for exp in exp_database:
                 y_best_cut,
                 label="Best Curve",
             )
-            # OLD version
-            #ax.plot(
-                ## displacements.detach().numpy(),
-                ## current_curve.detach().numpy(),
-                #np.concatenate(([0], displacements.detach().numpy())),
-                #np.concatenate(([0], current_curve.detach().numpy())),
-                #label="Best Curve",
-            #)
-
-            # Plot the fundamental curve
-            # ax.plot(
-            #     curve_fundamental[0, :].detach().numpy(),
-            #     curve_fundamental[1, :].detach().numpy(),
-            #     label="Fundamental Curve",
-            # )
+           
             ax.set_xlabel("Displacement [mm]")
             ax.set_ylabel("Force [N]")
             ax.set_title(f"$C_d = {exp[:-4]}$")
@@ -724,12 +677,7 @@ for exp in exp_database:
             fig.savefig(save_path, bbox_inches="tight")
             fig.savefig(save_path2, bbox_inches="tight")
             print(f"Figure saved in {save_path} and in {save_path2}")
-            # fig.savefig(exp[:-4] + "_TotalScript" + ".svg", bbox_inches="tight")
-
-            # plt.show()
-            #plt.show(block=False)
-            #plt.pause(2)  # serve per aggiornare la finestra
-            #plt.close(fig)  # chiude la finestra
+          
 
             # Interrupt the optimization process
             break
@@ -763,20 +711,11 @@ for exp in exp_database:
         label="Experimental Curve",
     )
     ax.plot(
-        #displacements.detach().numpy(),
-        #current_curve.detach().numpy(),
-        #np.concatenate(([0], displacements.detach().numpy())),
-        #np.concatenate(([0], current_curve.detach().numpy())),
         x_best_cut,
         y_best_cut,
         label="Best Curve",
     )
-    # Plot the fundamental curve
-    # ax.plot(
-    #     curve_fundamental[0, :].detach().numpy(),
-    #     curve_fundamental[1, :].detach().numpy(),
-    #     label="Fundamental Curve",
-    # )
+  
     ax.set_xlabel("Displacement [mm]")
     ax.set_ylabel("Force [N]")
       #ax.set_title(r"$C_d = $" + exp[:-4]) # added Cd in title r -- +
@@ -820,5 +759,6 @@ for exp in exp_database:
 
 # Print final message
 print("\n" + "Bayesian Optimization completed")
+
 
 mapdl.exit()
