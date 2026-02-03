@@ -87,7 +87,7 @@ beta = 2.5
 constrain_pbounds = True
 
 # Number of iterations of Bayesian Optimization (default 10)
-num_iterations = 1   # default 10
+num_iterations = 10   # default 10
 
 # Set random seed
 np.random.seed(51092)
@@ -146,22 +146,6 @@ for f in files:
     file_path = os.path.join(exp_path, f)  # path completo al file
     data = np.loadtxt(file_path, delimiter=",")  # ora funziona
     data_dict[f] = data
-
-
-
-
-
-############################### OLD BUT GOLD
-# Launch MAPDL instance
-#path = os.path.join(os.getcwd(), "ANSYS_Folder")
-#mapdl = launch_mapdl(run_location=path, override=True)
-
-# Import all the curves from the txt files in Experimental_Curves folder in a single dictionary
-# Importing the experimental curves
-#path = os.getcwd()
-#path = path + "/Experimental_Curves"
-#files = os.listdir(path)
-#############################
 
 
 # Remove file from list if it is not a txt file
@@ -796,3 +780,4 @@ print("\n" + "Bayesian Optimization completed")
 
 
 mapdl.exit()
+
