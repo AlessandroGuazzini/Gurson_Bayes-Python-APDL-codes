@@ -1,74 +1,98 @@
 # GursonBayes
-*A Multitask Bayesian Optimization framework for the identification of GTN constitutive model parameters based on a relatively small number of FE simulations.*
+
+*A multitask Bayesian optimization framework for the identification of Gurson–Tvergaard–Needleman (GTN) constitutive model parameters using a limited number of finite element simulations.*
 
 ## Overview
-This repository contains the code (Python and APDL) and the data for the paper: **"A Multitask Bayesian Optimization framework to identify a Gurson-Tvergaard-Needleman constitutive model for a MS1500 steel in hydrogen environment"** by.  T. Grossi, A. Guazzini, L. Romanelli, C. M. Belardini and B. D. Monelli.
 
-*(under peer review)*
+This repository provides the Python and APDL codes, together with the datasets, associated with the paper:
+
+**“A multitask Bayesian optimization framework for the identification of a Gurson–Tvergaard–Needleman constitutive model for MS1500 steel in a hydrogen environment”**  
+T. Grossi, A. Guazzini, L. Romanelli, C. M. Belardini, B. D. Monelli
+
+*(currently under peer review)*
+
+The proposed framework combines multitask Gaussian Process regression and Bayesian optimization to efficiently identify GTN model parameters from a reduced set of finite element (FE) simulations.
 
 ## Requirements
-- Python = 3.10
-- numpy~=1.26.4
-- scipy~=1.14.1
-- scikit-learn~=1.5.2
-- pandas~=2.2.3
-- matplotlib~=3.9.2
-- gpytorch~=1.14
-- pillow~=10.4.0
-- pyansys==2024.2.5
 
+- Python 3.10  
+- numpy ~= 1.26.4  
+- scipy ~= 1.14.1  
+- scikit-learn ~= 1.5.2  
+- pandas ~= 2.2.3  
+- matplotlib ~= 3.9.2  
+- gpytorch ~= 1.14  
+- pillow ~= 10.4.0  
+- pyansys == 2024.2.5  
 
 ## Usage
-1. First open Gurson_Bayes, run *Database_Random_Importer.py* where the variable **num_pairs** select the amount of simulations, taken from the databse with 100 FE simulations, that you want to use for the initial database.
-2. Run *Multitask_GPR_Training.py*, where **tol** is the variable related to the variable E0 of the paper
-3. Run *TEST_Bay_Opt_Tot.py* where the variable that can be arbitrarily changed are:
-   - **mean_order**: change the degree of the error evaluated (default 1, i.e. mean absolute error)
-   - **loss_thresh**: the threshold value for stop iterating. Default is -10 ("-" sign because it is resolved a maximization problem). If more accuracy is wanted, use values grater in absolute value, e.g. -5.
-   - **num_iterations**: the maximum number of iterations that can be esecuted if **loss_threshold** is not reached.
-4. For the reproduction of the **brute-force solution**, set:
-     - **num_pairs** = 100 (employ all FE database)
-     - **loss_thresh** = -0.1 (because we want that 10 simulations are executed for all the Cd)
-     - **num_iterations** = 10.
-5. For the reproduction of the tests S1,S2... of the paper set:
-     - **num_pairs** = 5 
-     - **loss_thresh** = -10 
-     - **num_iterations** = 10.
-  
+
+1. Open the `Gurson_Bayes` folder and run `Database_Random_Importer.py`.  
+   The variable **`num_pairs`** controls the number of FE simulations randomly selected from the full database (100 simulations) to construct the initial training dataset.
+
+2. Run `Multitask_GPR_Training.py`.  
+   The parameter **`tol`** corresponds to the variable \(\E_0\) defined in the paper.
+
+3. Run `TEST_Bay_Opt_Tot.py`.  
+   The main user-defined parameters are:
+   - **`mean_order`**: order of the error metric (default = 1, i.e. mean absolute error).
+   - **`loss_thresh`**: stopping threshold for the optimization loop.  
+     The default value is −10 (negative sign due to the maximization formulation).  
+     For higher accuracy, use values with smaller absolute magnitude (e.g. −5).
+   - **`num_iterations`**: maximum number of optimization iterations if the loss threshold is not reached.
+
+4. To reproduce the **brute-force solution**, set:
+   - **`num_pairs` = 100** (entire FE database),
+   - **`loss_thresh` = −0.1** (ensures 10 simulations are executed for each Cd value),
+   - **`num_iterations` = 10**.
+
+5. To reproduce tests **S1, S2, …** presented in the paper, set:
+   - **`num_pairs` = 5**,  
+   - **`loss_thresh` = −10**,  
+   - **`num_iterations` = 10**.
 
 ## Repository Structure
+
+
 ```
 Gurson_Bayes-Python-APDL-codes/
 │
 ├── Gurson_Bayes/
-│   ├── Experimental_Curves/              # curves of the un-notched specimen needed by the script
-│       ├── *.txt   
+│   ├── Experimental_Curves/              # Un-notched specimen curves used by the scripts
+│   │   └── *.txt
 │   ├── Database_Random_Importer.py       # Random selection of FE simulations for initial database
 │   ├── Multitask_GPR_Training.py         # Multitask Gaussian Process training
 │   ├── TEST_Bay_Opt_Tot.py               # Bayesian optimization loop
-│   ├── utils/                            # Utility functions and helpers   
+│   └── utils/                            # Utility functions
 │
 ├── Experimental Data/
-│   ├── *.txt                             # Experimental force-displacement curves for all the tests
+│   └── *.txt                             # Experimental force–displacement curves
 │
 ├── Database_MeshFact_1/
-│   ├── *.txt                             # FE simulation database files
+│   └── *.txt                             # FE simulation database
 │
 ├── ANSYS_Folder/
 │   └── ...                               # Working directory for MAPDL runs
-|
-├── APDL code/ANSYS_APDL_models           # Script APDL for reproducing un-notched and V-notched specimen simulation
-|
-├── Supplementary Material                # supplementary material for the paper                            
+│
+├── APDL code/ANSYS_APDL_models           # APDL scripts for un-notched and V-notched specimens
+│
+├── Supplementary Material                # Supplementary material for the paper
 │
 ├── README.md                             # Project documentation
 └── requirements.txt                      # Python dependencies
 
+
 ```
 
+
 ## Contact
-For suggestions, questions, or collaboration opportunities, please contact:
-- **T. Grossi**: tommaso.grossi@santannapisa.it
-- **A. Guazzini**: alessandro.guazzini@phd.unipi.it
-- Open an issue on this repository.
+
+For questions, suggestions, or collaboration opportunities, please contact:
+
+- **T. Grossi** — tommaso.grossi@santannapisa.it  
+- **A. Guazzini** — alessandro.guazzini@phd.unipi.it  
+
+Alternatively, open an issue in this repository.
+
 
 
