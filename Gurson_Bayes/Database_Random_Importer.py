@@ -12,14 +12,14 @@ num_pairs = 5    # Number of couples (j,k) to select
                  # if you select 100, you obtain the full database, i.e. brute force
 
 # Folder path with files .txt
-#path = os.path.join(os.getcwd(), "Database_MeshFact_1") # OLD BUONO
+#path = os.path.join(os.getcwd(), "Database_MeshFact_1") # OLD works
 
 # folder with file .py
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 # folder with database
 data_path = os.path.join(base_dir, "..","Database_MeshFact_1", "Database_MeshFact_1")
-path = os.path.abspath(data_path)  # normalizza il percorso
+path = os.path.abspath(data_path)  # normalize path
 
 files = os.listdir(path)
 
@@ -45,7 +45,7 @@ for (j, k) in selected:
     print(f"{j:2d} | {k:2d} | {fN_vec[j - 1]:.4f} | {epsN_vec[k - 1]:.4f}")
 print("--------------------------------\n")
 
-# --- CONSTRUCTION REDUCED DATABSE ---
+# --- CONSTRUCTION REDUCED DATABSE --- #
 database = {}
 
 for (j, k) in selected:
@@ -58,7 +58,7 @@ for (j, k) in selected:
     # Save in dictionary
     database[(fN_vec[j - 1], epsN_vec[k - 1])] = torch.tensor(data[:, 1])
 
-# --- SALVE ---
+# --- SAVE --- #
 displacements = torch.tensor(data[:, 0], dtype=torch.float32)
 
 torch.save(database, "Database_MeshFact_1_subset.pt")
@@ -67,3 +67,4 @@ torch.save(fN_vec, "fN_vec.pt")
 torch.save(epsN_vec, "epsN_vec.pt")
 
 print(" Random Database saved in 'Database_MeshFact_1_subset.pt'")
+
