@@ -481,8 +481,9 @@ for exp in exp_database:
    #stop_flag = False  # reset to every new experiment
 
     # Log date and time
+    exp_name = os.path.splitext(exp)[0]  # -> # Remove the extension .txt
     print("\n" + "Date and time: " + str(np.datetime64("now")))
-    print("\n" + "Starting Bayesian Optimization for " + str(exp))
+    print("\n" + "Starting Bayesian Optimization for Cd=" + str(exp_name))
 
     # Update pbounds, if necessary
     if constrain_pbounds:
@@ -780,4 +781,5 @@ print("\n" + "Bayesian Optimization completed")
 
 
 mapdl.exit()
+
 
