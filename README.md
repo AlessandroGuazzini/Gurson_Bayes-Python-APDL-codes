@@ -31,7 +31,7 @@ The proposed framework combines multitask Gaussian Process regression and Bayesi
    The variable **`num_pairs`** controls the number of FE simulations randomly selected from the full database (100 simulations) to construct the initial training dataset.
 
 2. Run `Multitask_GPR_Training.py`.  
-   The parameter **`tol`** corresponds to the variable \(\E_0\) defined in the paper.
+   The parameter **`tol`** corresponds to the variable E_0 defined in the paper.
 
 3. Run `TEST_Bay_Opt_Tot.py`.  
    The main user-defined parameters are:
