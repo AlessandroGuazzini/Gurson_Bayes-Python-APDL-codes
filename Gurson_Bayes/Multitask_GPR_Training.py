@@ -3,66 +3,16 @@ import numpy as np
 import torch
 import gpytorch
 import matplotlib.pyplot as plt
+from helpers.plotting import apply_plot_style
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from cycler import cycler
-
-# Style
-plt.rcParams.update({
-    # --- Patch settings ---
-    'patch.linewidth': 0.5,
-    'patch.facecolor': '#348ABD',  # blue
-    'patch.edgecolor': '#EEEEEE',
-    'patch.antialiased': True,
-
-    # --- Font settings ---
-    'font.size': 15,
-    'font.family': 'STIXGeneral',
-    # 'font.family': 'serif',
-    # 'font.serif': ['Times New Roman'],
-
-    # --- Math text ---
-    'mathtext.fontset': 'stix',
-
-    # --- Axes settings ---
-    'axes.facecolor': 'white',
-    'axes.edgecolor': '#555555',
-    'axes.linewidth': 1,
-    'axes.grid': True,
-    'axes.titlesize': 'x-large',
-    'axes.labelsize': 'large',
-    'axes.labelcolor': '#555555',
-    'axes.axisbelow': True,
-    'axes.prop_cycle': cycler('color', [
-        '#E24A33',  # red
-        '#348ABD',  # blue
-        '#988ED5',  # purple
-        '#777777',  # gray
-        '#FBC15E',  # yellow
-        '#8EBA42',  # green
-        '#FFB5B8'   # pink
-    ]),
-
-    # --- Tick settings ---
-    'xtick.color': '#555555',
-    'xtick.direction': 'out',
-    'ytick.color': '#555555',
-    'ytick.direction': 'out',
-
-    # --- Grid settings ---
-    'grid.color': '#E5E5E5',
-    'grid.linestyle': '-',
-
-    # --- Figure settings ---
-    'figure.facecolor': 'white',
-    'figure.edgecolor': '0.50',
-})
-plt.rcParams['figure.constrained_layout.use'] = True
+# Apply plotting style from helper
+apply_plot_style()
 
 
 # Load database files - if you want to use the full database, uncomment the next line
-#database = torch.load("Database_MeshFact_1.pt")
+# database = torch.load("Database_MeshFact_1.pt")
 
 # Load subset database
 database = torch.load("Database_MeshFact_1_subset.pt")
@@ -73,7 +23,6 @@ displacements = torch.load("displacements.pt")
 # Load fN_vec and epsN_vec
 fN_vec = torch.load("fN_vec.pt")
 epsN_vec = torch.load("epsN_vec.pt")
-
 
 
 # At this point, we have to transform inputs and outputs to prepare them to be fitted by a GPR
@@ -105,7 +54,7 @@ data = np.loadtxt(path, skiprows=1)
 force_noGurson = torch.tensor(data[:, 1], dtype=torch.float32)
 
 # Normalize the outputs as planned
-tol = 10 # (N) - change it for different \eps_0 (def. 10)
+tol = 10  # (N) - change it for different \eps_0 (def. 10)
 ind = 0  # Trial index
 differential_database = {}
 transformed_outputs = torch.zeros((len(database), 101))
@@ -133,7 +82,7 @@ for key in database:
 
     # temp is now a vector of 101 points, which we will use as output for the GPR
     # We also have to normalize the inputs, so we store them in a separate vector
-    
+
     normalized_inputs[ind, :] = torch.tensor(
         ((key[0] - mean_fN) / std_fN, (key[1] - mean_epsN) / std_epsN)
     )  # New version
@@ -211,14 +160,14 @@ def denormalize_output(outputs):
 
 # Define function that takes a denormalized input and returns the normalized input
 def normalize_input(input):
-    
+
     return torch.stack(
         (
             (input[:, 0] - mean_fN) / std_fN,
             (input[:, 1] - mean_epsN) / std_epsN,
         ),
         dim=1,
-    )  
+    )
 
 
 # Define GPR model
@@ -256,7 +205,7 @@ optimizer = torch.optim.Adam(
 mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
 
-# Training loop 
+# Training loop
 training_iterations = 1000
 for i in range(training_iterations):
     optimizer.zero_grad()
@@ -273,7 +222,9 @@ likelihood.eval()
 
 # Make predictions
 with torch.no_grad(), gpytorch.settings.fast_pred_var():
-    test_x = torch.tensor([[0.0012, 0.25], [0.012, 0.15]]) # Example inputs - can be changed
+    test_x = torch.tensor(
+        [[0.0012, 0.25], [0.012, 0.15]]
+    )  # Example inputs - can be changed
     test_x = normalize_input(test_x)
     predictions = likelihood(model(test_x))
     mean = predictions.mean
@@ -289,7 +240,6 @@ plt.ylabel("Force")
 plt.title("GPR predictions")
 plt.legend()
 plt.show()
-
 
 
 # Save model
@@ -327,4 +277,3 @@ torch.save(tol, "Tolerance.pt")
 # Print fN_vec and epsN_vec
 print("Valori di fN:", fN_vec)
 print("Valori di epsN:", epsN_vec)
-

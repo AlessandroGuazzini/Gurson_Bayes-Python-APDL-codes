@@ -1,5 +1,8 @@
 # GursonBayes
 
+![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+
 *A multitask Bayesian optimization framework for the identification of Gurson–Tvergaard–Needleman (GTN) constitutive model parameters using a limited number of finite element simulations.*
 
 ## Overview
@@ -13,17 +16,39 @@ T. Grossi, A. Guazzini, L. Romanelli, C. M. Belardini, B. D. Monelli
 
 The proposed framework combines multitask Gaussian Process regression and Bayesian optimization to efficiently identify GTN model parameters from a reduced set of finite element (FE) simulations.
 
-## Requirements
+## Installation & Requirements
 
-- Python 3.10  
-- numpy ~= 1.26.4  
-- scipy ~= 1.14.1  
-- scikit-learn ~= 1.5.2  
-- pandas ~= 2.2.3  
-- matplotlib ~= 3.9.2  
-- gpytorch ~= 1.14  
-- pillow ~= 10.4.0  
-- pyansys == 2024.2.5  
+### For `uv` users (recommended)
+If you have [uv](https://github.com/astral-sh/uv) installed, you can replicate the environment and sync all dependencies directly from `pyproject.toml`:
+```powershell
+uv sync
+.\.venv\Scripts\activate
+```
+This will create a `.venv` with all necessary packages (Python 3.10+) and activate it.
+
+### For `pip` users
+Alternatively, you can use `pip` with the `requirements.txt` file by creating and activating a virtual environment manually:
+```powershell
+# Create the environment
+python -m venv .venv
+
+# Activate the environment
+.\.venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Dependencies
+- Python >= 3.10
+- numpy ~= 1.26.4
+- scipy ~= 1.14.1
+- scikit-learn ~= 1.5.2
+- pandas ~= 2.2.3
+- matplotlib ~= 3.9.2
+- gpytorch ~= 1.13 (Note: 1.14 intended, using latest stable available)
+- pillow ~= 10.4.0
+- pyansys ~= 2024.2.0 (Note: should match your local Ansys version as per PyAnsys instructions)
 
 ## Usage
 

@@ -10,61 +10,12 @@ from ansys.mapdl.core import launch_mapdl
 import warnings
 import sys
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+from helpers.plotting import apply_plot_style
 
-from cycler import cycler
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-# Choice of Style
-plt.rcParams.update({
-    # --- Patch settings ---
-    'patch.linewidth': 0.5,
-    'patch.facecolor': '#348ABD',  # blue
-    'patch.edgecolor': '#EEEEEE',
-    'patch.antialiased': True,
-
-    # --- Font settings ---
-    'font.size': 15,
-    'font.family': 'STIXGeneral',
-    # 'font.family': 'serif',
-    # 'font.serif': ['Times New Roman'],
-
-    # --- Math text ---
-    'mathtext.fontset': 'stix',
-
-    # --- Axes settings ---
-    'axes.facecolor': 'white',
-    'axes.edgecolor': '#555555',
-    'axes.linewidth': 1,
-    'axes.grid': True,
-    'axes.titlesize': 'x-large',
-    'axes.labelsize': 'large',
-    'axes.labelcolor': '#555555',
-    'axes.axisbelow': True,
-    'axes.prop_cycle': cycler('color', [
-        '#E24A33',  # red
-        '#348ABD',  # blue
-        '#988ED5',  # purple
-        '#777777',  # gray
-        '#FBC15E',  # yellow
-        '#8EBA42',  # green
-        '#FFB5B8'   # pink
-    ]),
-
-    # --- Tick settings ---
-    'xtick.color': '#555555',
-    'xtick.direction': 'out',
-    'ytick.color': '#555555',
-    'ytick.direction': 'out',
-
-    # --- Grid settings ---
-    'grid.color': '#E5E5E5',
-    'grid.linestyle': '-',
-
-    # --- Figure settings ---
-    'figure.facecolor': 'white',
-    'figure.edgecolor': '0.50',
-})
-plt.rcParams['figure.constrained_layout.use'] = True
+# Apply plotting style from helper
+apply_plot_style()
 
 
 # ---PARAMETERS--- #
@@ -87,7 +38,7 @@ beta = 2.5
 constrain_pbounds = True
 
 # Number of iterations of Bayesian Optimization (default 10)
-num_iterations = 10   # default 10
+num_iterations = 10  # default 10
 
 # Set random seed
 np.random.seed(51092)
@@ -138,8 +89,11 @@ if not os.path.exists(exp_path):
     raise FileNotFoundError(f"Cartella non trovata: {exp_path}")
 
 # lista solo dei file .txt, ignorando eventuali cartelle come .idea
-files = [f for f in os.listdir(exp_path)
-         if os.path.isfile(os.path.join(exp_path, f)) and f.endswith(".txt")]
+files = [
+    f
+    for f in os.listdir(exp_path)
+    if os.path.isfile(os.path.join(exp_path, f)) and f.endswith(".txt")
+]
 # carica tutti i file .txt in un dizionario
 data_dict = {}
 for f in files:
@@ -478,7 +432,7 @@ max_epsN = epsN_vec[-1].item()
 
 for exp in exp_database:
 
-   #stop_flag = False  # reset to every new experiment
+    # stop_flag = False  # reset to every new experiment
 
     # Log date and time
     exp_name = os.path.splitext(exp)[0]  # -> # Remove the extension .txt
@@ -582,7 +536,6 @@ for exp in exp_database:
             minimizer_kwargs={"jac": "3-point"},
         )
 
-        
         new_fN = res.x[0]
         new_epsN = res.x[1]
 
@@ -592,16 +545,13 @@ for exp in exp_database:
         )
         new_curve = curve_function(new_fN, new_epsN)
 
-    
         new_x = normalize_input([new_fN, new_epsN])
 
         # Normalize new training curve
         new_y = normalize_curve(new_curve)
 
-
         # Evaluate loss_function at the new point
         new_loss = loss_function(new_curve, curve_to_model)[0]
-
 
         # Print new loss
         print("New Tested Loss: " + str(new_loss))
@@ -651,7 +601,9 @@ for exp in exp_database:
 
         # If loss > threshold, stop optimization
         if current_best > loss_thresh:
-            print(f"Loss is sufficient ({current_best:.3f}) -> stop optimization for {exp}")
+            print(
+                f"Loss is sufficient ({current_best:.3f}) -> stop optimization for {exp}"
+            )
             # Plot the current best curve vs the curve_to_model, use object-oriented interface
             fig, ax = plt.subplots()
             ax.plot(
@@ -660,7 +612,7 @@ for exp in exp_database:
                 label="Experimental Curve",
             )
             x_exp = curve_to_model[0, :].detach().numpy()
-            x_max_exp =x_exp.max()
+            x_max_exp = x_exp.max()
             x_best = np.concatenate(([0], displacements.detach().numpy()))
             y_best = np.concatenate(([0], current_curve.detach().numpy()))
             mask = x_best <= x_max_exp
@@ -671,7 +623,7 @@ for exp in exp_database:
                 y_best_cut,
                 label="Best Curve",
             )
-           
+
             ax.set_xlabel("Displacement [mm]")
             ax.set_ylabel("Force [N]")
             ax.set_title(f"$C_d = {exp[:-4]}$")
@@ -696,11 +648,9 @@ for exp in exp_database:
             fig.savefig(save_path, bbox_inches="tight")
             fig.savefig(save_path2, bbox_inches="tight")
             print(f"Figure saved in {save_path} and in {save_path2}")
-          
 
             # Interrupt the optimization process
             break
-
 
     # Print final best value and best parameters
     print(
@@ -734,10 +684,10 @@ for exp in exp_database:
         y_best_cut,
         label="Best Curve",
     )
-  
+
     ax.set_xlabel("Displacement [mm]")
     ax.set_ylabel("Force [N]")
-      #ax.set_title(r"$C_d = $" + exp[:-4]) # added Cd in title r -- +
+    # ax.set_title(r"$C_d = $" + exp[:-4]) # added Cd in title r -- +
     ax.set_title(f"$C_d = {exp[:-4]}$")
     ax.legend()
 
@@ -751,17 +701,18 @@ for exp in exp_database:
         + r"$\varepsilon_N =$ "
         + "{0:.3g}".format(current_epsN)
         + "\n"
-        + r"$Loss =$ " + "{0:.3f}".format(abs(current_best)),
+        + r"$Loss =$ "
+        + "{0:.3f}".format(abs(current_best)),
         transform=ax.transAxes,
         verticalalignment="center",
     )
 
     # Save figure (svg)
-    #save_path = os.path.join(os.getcwd(), exp[:-4] + "_TotalScript.svg")
+    # save_path = os.path.join(os.getcwd(), exp[:-4] + "_TotalScript.svg")
     save_path = os.path.join(os.getcwd(), exp[:-4] + "_TotalScript.svg")
     fig.savefig(save_path, bbox_inches="tight")
-    #print(f"Figure saved in: {save_path}")
-    #fig.savefig(exp[:-4] + "_TotalScript" + ".svg", bbox_inches="tight")
+    # print(f"Figure saved in: {save_path}")
+    # fig.savefig(exp[:-4] + "_TotalScript" + ".svg", bbox_inches="tight")
 
     # Save it also in PDF
     save_path_pdf = os.path.join(os.getcwd(), exp[:-4] + "_TotalScript.pdf")
@@ -770,8 +721,7 @@ for exp in exp_database:
     # plt.show()
     plt.show(block=False)
     plt.pause(2)  # update window
-    #plt.close(fig) # close window
-
+    # plt.close(fig) # close window
 
 
 # -------------------------------------------- END OF THE BIGGEST FOR LOOP ------------------------------------------ #
@@ -781,5 +731,3 @@ print("\n" + "Bayesian Optimization completed")
 
 
 mapdl.exit()
-
-
