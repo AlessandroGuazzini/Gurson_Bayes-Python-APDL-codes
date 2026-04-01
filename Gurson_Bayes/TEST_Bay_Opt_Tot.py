@@ -72,33 +72,33 @@ sys.stdout = Logger()
 warnings.filterwarnings(action="ignore")
 
 
-# cartella dove si trova il file .py
+# Get the directory where the current Python file is located
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Path per ANSYS_Folder
+# Path for ANSYS_Folder
 ansys_path = os.path.join(base_dir, "..", "ANSYS_Folder")
 ansys_path = os.path.abspath(ansys_path)
 mapdl = launch_mapdl(run_location=ansys_path, override=True)
 
 
-# path Experimental_Curves (ora è dentro Gurson_Bayes)
+# Path for Experimental_Curves (located inside Gurson_Bayes)
 exp_path = os.path.join(base_dir, "Experimental_Curves")
 exp_path = os.path.abspath(exp_path)
-# controlla se esiste
+# Check if the directory exists
 if not os.path.exists(exp_path):
-    raise FileNotFoundError(f"Cartella non trovata: {exp_path}")
+    raise FileNotFoundError(f"Folder not found: {exp_path}")
 
-# lista solo dei file .txt, ignorando eventuali cartelle come .idea
+# List only .txt files, ignoring any folders or other extensions
 files = [
     f
     for f in os.listdir(exp_path)
     if os.path.isfile(os.path.join(exp_path, f)) and f.endswith(".txt")
 ]
-# carica tutti i file .txt in un dizionario
+# Load all .txt files into a dictionary
 data_dict = {}
 for f in files:
-    file_path = os.path.join(exp_path, f)  # path completo al file
-    data = np.loadtxt(file_path, delimiter=",")  # ora funziona
+    file_path = os.path.join(exp_path, f)  # Full path to the file
+    data = np.loadtxt(file_path, delimiter=",")  # Load data
     data_dict[f] = data
 
 
@@ -431,7 +431,6 @@ max_epsN = epsN_vec[-1].item()
 # ------------------------------------------ START OF THE BIGGEST FOR LOOP ------------------------------------------ #
 
 for exp in exp_database:
-
     # stop_flag = False  # reset to every new experiment
 
     # Log date and time

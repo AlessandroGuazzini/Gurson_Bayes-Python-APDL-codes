@@ -46,7 +46,7 @@ pip install -r requirements.txt
 - scikit-learn ~= 1.5.2
 - pandas ~= 2.2.3
 - matplotlib ~= 3.9.2
-- gpytorch ~= 1.13 (Note: 1.14 intended, using latest stable available)
+- gpytorch ~= 1.13
 - pillow ~= 10.4.0
 - pyansys ~= 2024.2.0 (Note: should match your local Ansys version as per PyAnsys instructions)
 

@@ -160,7 +160,6 @@ def denormalize_output(outputs):
 
 # Define function that takes a denormalized input and returns the normalized input
 def normalize_input(input):
-
     return torch.stack(
         (
             (input[:, 0] - mean_fN) / std_fN,

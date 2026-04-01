@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from cycler import cycler
 
+
 def apply_plot_style():
     """
     Applies a consistent and premium plotting style using matplotlib rcParams.
