@@ -128,14 +128,26 @@ def loss_function(curve_simulated, curve_to_model):
     return loss
 
 
+n_eval_cd = 0  # Global counter for strict enforcement
+
+
 def objective(x, curve_to_model):
+    global n_eval_cd
     fN, epsN = x
-    print(f"Dual Annealing testing: fN={fN:.5f}, epsN={epsN:.5f}")
+
+    # STRICT ENFORCEMENT: skip expensive simulation if budget exceeded
+    if n_eval_cd >= max_fun_evals:
+        # Return a high penalty value without calling MAPDL
+        return 1e10
+
+    print(f"Dual Annealing evaluation {n_eval_cd + 1}/{max_fun_evals}: fN={fN:.5f}, epsN={epsN:.5f}")
 
     curve = curve_function(fN, epsN)
     loss = loss_function(curve, curve_to_model)[0]  # returns negative loss
 
     evaluation_history[(fN, epsN)] = (curve, loss)
+    n_eval_cd += 1
+
     # The scipy minimize wants to *minimize* the objective function,
     # so we return -loss, which is positive. The closer to 0, the better.
     print(f"Objective Evaluated: {-loss:.3f}")
@@ -143,12 +155,13 @@ def objective(x, curve_to_model):
 
 
 def stop_cb(x, f, context):
-    # Stop earlier if we fall under the loss_thresh?
-    # Return True to stop.
-    # Note: f is positive here, so we compare -f > loss_thresh
+    # Stop if we reach enough accuracy OR if we exceeded the evaluation budget
     current_loss = -f
     if current_loss > loss_thresh:
         print(f"Optimization stopped: reached sufficient loss {current_loss:.3f}")
+        return True
+    if n_eval_cd >= max_fun_evals:
+        print(f"Optimization stopped: reached budget limit ({max_fun_evals} evaluations)")
         return True
     return False
 
@@ -169,6 +182,7 @@ for exp in exp_database:
     curve_to_model[1, :] = curve_to_model[1, :] * 1.52 * 5.95
 
     evaluation_history.clear()
+    n_eval_cd = 0
 
     # Callback stopping mechanism requires maxfun bound to prevent long runs
     res = dual_annealing(
@@ -176,7 +190,10 @@ for exp in exp_database:
         bounds,
         args=(curve_to_model,),
         maxfun=max_fun_evals,
+        maxiter=10,
+        no_local_search=True,
         callback=stop_cb,
+        seed=51092,
     )
 
     best_fN, best_epsN = res.x
