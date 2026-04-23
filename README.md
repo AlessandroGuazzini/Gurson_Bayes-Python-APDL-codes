@@ -9,7 +9,7 @@
 
 This repository provides the Python and APDL codes, together with the datasets, associated with the paper:
 
-**“A multitask Bayesian optimization framework for the identification of a Gurson–Tvergaard–Needleman constitutive model for MS1500 steel in a hydrogen environment”**  
+**“A multitask Bayesian optimization framework for the identification of a Gurson–Tvergaard–Needleman constitutive model for an MS1500 steel in a hydrogen environment”**  
 T. Grossi, A. Guazzini, L. Romanelli, C. M. Belardini, B. D. Monelli
 
 *(currently under peer review)*
